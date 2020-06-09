@@ -1,10 +1,13 @@
+"""
+Real time cough location and detection system on Kinect Azure mic array.
+log in console record the DoA estimation and detection result.
+run view.html to monitor the audio stream and DoA.
+"""
 import logging
-
 import pyaudio
 import numpy as np
 import time
 import sys
-import matplotlib.pyplot as plt
 from real_time_detection.doa import DoAEstimation
 import threading
 from queue import Queue
@@ -20,6 +23,10 @@ warnings.filterwarnings("ignore")
 
 
 class AudioStream(object):
+    """
+    Audio stream recorder object.
+    only support Kinect Azure mic array
+    """
     def __init__(self):
         threading.Thread.__init__(self)
         self.log_init()
@@ -127,14 +134,14 @@ if __name__ == '__main__':
     print(' -- init doa estimation')
     cnt = 0
     sum = 0
-    doa = DoAEstimation()
-    history = collections.deque(maxlen=400)
+    doa = DoAEstimation()   # doa estimation object
+    history = collections.deque(maxlen=400)     # queue(4s)
     initial = time.time()
     with AudioStream() as mic:
         t0 = time.time()
         for chunk in mic.read_chunks():
             history.append(chunk)
-            if time.time() - t0 > 2:
+            if time.time() - t0 > 2:        # process the queue every 2 seconds
                 cnt += 1
                 t0 = time.time()
                 start = time.time()
@@ -151,12 +158,12 @@ if __name__ == '__main__':
                 pylab.axis([0, 4, -2000, 2000])
                 pylab.savefig('audio.png', dpi=50)
                 pylab.close('all')
-                index = silence.detect_nonsilent(seg, silence_thresh=-50)
+                index = silence.detect_nonsilent(seg, silence_thresh=-50)   # detect silence
 
                 if len(index) != 0:
-                    doa.doa(a)
-                    mic.logger.info('SRP-PHAT estimate azimuth:'+ str(doa.azimuth / np.pi * 180.)+ 'degrees')
-                    res = aT.wav_classification(signal, 16000, "../svmSMtemp", "svm_rbf")
+                    doa.doa(a)  # doa estimation
+                    mic.logger.info('SRP-PHAT estimate azimuth:'+ str(doa.azimuth / np.pi * 180.) + 'degrees')
+                    res = aT.wav_classification(signal, 16000, "../svmSMtemp", "svm_rbf")   # cough detection
                     if res[0] == -1:
                         pass
                     elif res[1][0] - res[1][1] > 0.3:

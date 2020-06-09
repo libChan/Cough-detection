@@ -8,7 +8,6 @@ import pyroomacoustics as pra
 from pyroomacoustics.doa import circ_dist
 
 # algoithms parameters
-# SNR = 0.  # signal-to-noise ratio
 c = 343.  # speed of sound
 fs = 16000  # sampling frequency
 nfft = 256  # FFT size
@@ -42,12 +41,19 @@ f = open('./result/doa_eval_2doa.txt', 'w')
 
 
 def loop(azimuth, distance, snr):
+    """
+    evaluate the impact of different sources' azimuth and distance on DoA estimation, as well as SNR.
+    :param azimuth: list of sources' azimuth
+    :param distance: list of sources' distance
+    :param snr: signal to noise ratio
+    """
     room_dim = np.r_[10., 10.]
     room = pra.ShoeBox(room_dim, fs=fs, max_order=2, absorption=0.1)
 
-    R = circular_2d_array(room_dim / 2, 7, 0.0425)
+    R = circular_2d_array(room_dim / 2, 7, 0.0425)  # Kinect mic array location
     room.add_microphone_array(pra.MicrophoneArray(R, room.fs))
 
+    # add signals
     for i in range(len(azimuth)):
         source = room_dim / 2 + distance[i] * np.r_[np.cos(azimuth[i]), np.sin(azimuth[i])]
         room.add_source(source, signal=signal[i])
@@ -61,9 +67,11 @@ def loop(azimuth, distance, snr):
         pra.stft(signal, nfft, nfft // 2, transform=np.fft.rfft).T
         for signal in room.mic_array.signals])
 
+    # MUSIC
     music = pra.doa.MUSIC(R, fs, nfft, c=c, max_four=2)
     music.locate_sources(X, num_src=len(azimuth), freq_bins=freq_bins)
 
+    # SRP-PHAT
     srp = pra.doa.SRP(R, fs, nfft, c=c, max_four=2)
     srp.locate_sources(X, num_src=len(azimuth), freq_bins=freq_bins)
     srp.polar_plt_dirac(azimuth_ref=np.array(azimuth))
@@ -72,12 +80,12 @@ def loop(azimuth, distance, snr):
         res = []
         for elem in itertools.permutations(pre, len(pre)):
             res.append(np.mean(np.array(abs(np.array(y) - np.array(elem)))))
-
         return np.min(res)
 
-    pre_music = music.azimuth_recon / np.pi * 180.
-    pre_srp = srp.azimuth_recon / np.pi * 180.
+    pre_music = music.azimuth_recon / np.pi * 180.  # estimation result of MUSIC
+    pre_srp = srp.azimuth_recon / np.pi * 180.      # estimation result of SRP-PHAT
     y = np.array(azimuth) * 180. / np.pi
+    # calculate the estimation error
     err_music = calculate_error(y, pre_music)
     err_srp = calculate_error(y, pre_srp)
     if y[0] == 0:

@@ -3,6 +3,9 @@ import numpy as np
 
 
 def plot_svm_eval():
+    """
+    plot SVM_RBF or SVM_linear evaluation result.
+    """
     c = []
     cough = []
     non_cough = []
@@ -61,6 +64,9 @@ def plot_svm_eval():
 
 
 def plot_linear_vs_rbf():
+    """
+    plot acc and f1-index of SVM_linear and SVM_RBF.
+    """
     fig = plt.figure()
     plt.title('rbf vs linear with best c')
     name = ['ACC', 'F1']
@@ -78,7 +84,10 @@ def plot_linear_vs_rbf():
     plt.show()
 
 
-def plot_eval_score():
+def plot_test_score():
+    """
+    plot SVM_RBF evaluation score on test set.
+    """
     fig = plt.figure()
     plt.title('Test of SVM_RBF')
     x = range(5)

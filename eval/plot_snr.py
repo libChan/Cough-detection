@@ -1,4 +1,6 @@
-import numpy as np
+"""
+plot the result of beamforming evaluation(SNR).
+"""
 import matplotlib.pyplot as plt
 
 snr = []

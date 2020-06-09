@@ -1,5 +1,6 @@
-import itertools
-import numpy as np
+"""
+plot the result of DoA estimation.
+"""
 import matplotlib.pyplot as plt
 
 azimuth = []

@@ -1,15 +1,14 @@
+"""
+Beamforming evaluation.
+Set the cough sound as interest signal, white noise as interference signal.
+Compute the time domain MVDR filter.
+Output: SNR before and after MVDR filter processing.
+"""
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import wavfile
 import pyroomacoustics as pra
 from mir_eval.separation import bss_eval_sources
-
-# Spectrogram figure properties
-figsize = (15, 7)  # figure size
-fft_size = 512  # fft size for analysis
-fft_hop = 8  # hop between analysis frame
-fft_zp = 512  # zero padding
-analysis_window = np.concatenate((pra.hann(fft_size), np.zeros(fft_zp)))
 
 # Some simulation parameters
 Fs = 8000
@@ -34,13 +33,13 @@ N = 1024
 # Create a microphone array
 R = pra.circular_2D_array(mic1, M, phi, d * M / (2 * np.pi))
 
-rate1, signal1 = wavfile.read('./data/audioset_40fIOkLK3j4_65_70.wav')
+rate1, signal1 = wavfile.read('./data/audioset_40fIOkLK3j4_65_70.wav')  # cough sound
 print(rate1)
 signal1 = np.array(signal1, dtype=float)
 signal1 = pra.normalize(signal1)
 signal1 = pra.highpass(signal1, Fs)
 
-rate2, signal2 = wavfile.read('./result/noise.wav')
+rate2, signal2 = wavfile.read('./result/noise.wav')     # white noise
 print(rate2)
 signal2 = np.array(signal2, dtype=float)
 signal2 = pra.normalize(signal2)
@@ -60,16 +59,17 @@ def beamforming(para):
                 max_order=max_order_sim,
                 sigma2_awgn=sigma2_n)
 
-            good_source = mic1 + i[1] * np.r_[np.cos(i[0]), np.sin(i[0])]
-            interferer = mic1 + i[3] * np.r_[np.cos(i[2]), np.sin(i[2])]
+            good_source = mic1 + i[1] * np.r_[np.cos(i[0]), np.sin(i[0])]   # interest signal
+            interferer = mic1 + i[3] * np.r_[np.cos(i[2]), np.sin(i[2])]    # interference signal
             room1.add_source(good_source, signal=signal1)
             room1.add_source(interferer, signal=signal2)
 
-            # compute beamforming filters
+            # add mic array
             mics = pra.Beamformer(R, Fs, N=N, Lg=Lg)
             room1.add_microphone_array(mics)
             room1.compute_rir()
             room1.simulate()
+            # compute beamforming filters
             mics.rake_mvdr_filters(room1.sources[0][0:1],
                                    room1.sources[1][0:1],
                                    sigma2_n * np.eye(mics.Lg * mics.M))
@@ -80,6 +80,7 @@ def beamforming(para):
             input_mic = pra.normalize(pra.highpass(mics.signals[mics.M // 2], Fs))
             out_DirectMVDR = pra.normalize(pra.highpass(output, Fs))
 
+            # compute the sdr(=snr in beamforming)
             sdr_1, sir, sar, perm = bss_eval_sources(signal1, out_DirectMVDR[:len(signal1)])
             sdr_2, sir, sar, perm = bss_eval_sources(signal1, input_mic[:len(signal1)])
 

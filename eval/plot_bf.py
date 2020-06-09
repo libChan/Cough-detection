@@ -1,3 +1,6 @@
+"""
+plot the result of beamforming evaluation(azimuth and distance).
+"""
 import matplotlib.pyplot as plt
 import numpy as np
 

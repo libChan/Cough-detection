@@ -6,6 +6,12 @@ import pyroomacoustics as pra
 
 
 class MicrophoneArray(object):
+    """
+    generate circular mic array locations
+
+    r = radius
+    n = channels
+    """
     def __init__(self, center, n, r):
         self.center = center
         self.n = n
@@ -19,6 +25,9 @@ class MicrophoneArray(object):
 
 
 class DoAEstimation(object):
+    """
+    Doa estimation module(default algorithm is SRP-PHAT, grid size = 360)
+    """
     def __init__(self):
         self.room_dim = np.r_[10., 10.]
         CHANNEL = 7
@@ -30,7 +39,7 @@ class DoAEstimation(object):
         mic = MicrophoneArray(self.room_dim / 2, n=CHANNEL, r=0.0425)
         self.R = mic.coordinates()
         self.azimuth = []
-        self.beamformer = pra.Beamformer(self.R, self.fs, N=self.nfft, Lg=self.Lg)
+        self.beamformer = pra.Beamformer(self.R, self.fs, N=self.nfft, Lg=self.Lg)  # beamforming
 
     def doa(self, mic_signal_array, algorithm='SRP', view=True):
         X = np.array([
