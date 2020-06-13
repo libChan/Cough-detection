@@ -49,6 +49,9 @@ Structure:
 
 ```
 ----cough_detection\
+	|----doc\
+    |    |----thesis\			# my thesis and ppt
+    |    |----bibliography\		
     |----data\
     |    |----test\
     |    |    |----Cough\		
