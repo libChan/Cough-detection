@@ -4,7 +4,7 @@ mir_eval==0.6
 pyroomacoustics==0.3.1
 scipy==1.4.1
 matplotlib==3.1.2
-numpy==1.18.1
+numpy==1.22.0
 ipython==7.15.0
 pyaudio==0.2.11
 pyAudioAnalysis==0.3.4
